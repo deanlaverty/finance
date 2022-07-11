@@ -1,16 +1,49 @@
 version: '3.4'
 
 services:
-  finance_nginx:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - "8088:80"
     depends_on:
-      - finance_app
+      - app
+      - mysql
+    networks:
+      - finance
+    volumes:
+      - "./src:/var/www/html"
+      - "./build/nginx/default.conf:/etc/nginx/conf.d/default.conf"
 
-  finance_app:
+  app:
     image: finance
     build:
       context: .
       dockerfile: ./Dockerfile
-      
+    container_name: app
+    volumes:
+      - "./src:/var/www/html"
+    ports: 
+      "9000:9000"
+    networks:
+      - finance
+
+  mysql:
+    image: mysql:8.0.29
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./build/mysql:/var/lib/mysql"
+    environment:
+      - MYSQL_DATABASE=finance
+      - MYSQL_USER=finance
+      - MYSQL_PASSWORD=secret
+      - MYSQL_ROOT_PASSWORD=secret
+      - SERVICE_TAGS=dev
+      - SERVICE_NAME=mysql
     networks:
       - finance
 
