@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  finance_nginx:
+    depends_on:
+      - finance_app
+
+  finance_app:
+    image: finance
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      
+    networks:
+      - finance
+
+networks:
+  finance:
