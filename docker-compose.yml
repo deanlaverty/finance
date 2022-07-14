@@ -12,17 +12,21 @@ services:
     networks:
       - finance
     volumes:
-      - "./src:/var/www/html"
+      - "./:/var/www/html"
       - "./build/nginx/default.conf:/etc/nginx/conf.d/default.conf"
 
   app:
     image: finance
     build:
+      args:
+        user: finance
+        uid: 1000
       context: .
       dockerfile: ./Dockerfile
-    container_name: app
+    container_name: finance-app
+    restart: unless-stopped
     volumes:
-      - "./src:/var/www/html"
+      - "./:/var/www/html"
     ports: 
       - "9000:9000"
     networks:
@@ -36,7 +40,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - "./build/mysql:/var/lib/mysql"
+      - dbdata:/var/lib/mysql
     environment:
       - MYSQL_DATABASE=finance
       - MYSQL_USER=finance
@@ -46,6 +50,10 @@ services:
       - SERVICE_NAME=mysql
     networks:
       - finance
+
+volumes:
+  dbdata:
+    driver: local
 
 networks:
   finance:
